@@ -1,0 +1,12 @@
+# Android features that differ from Windows
+- **Widget:** native App Widget (tree stage, live elapsed/remaining time, Plant/Pause/Resume/Stop, tap to open) instead of a free-floating, resizable, transparent window. Its tree is a simplified 4-stage drawing, not the full SVG species art.
+- **Always-on-top switches:** removed (hidden) – no phone equivalent.
+- **Blocked / always-allowed apps and blocked websites:** not functional. Android forbids closing other apps and editing the hosts file; real blocking would need an Accessibility service or VPN service (invasive; deliberately not added). The settings screens still exist but have no effect.
+- **"Keep PC awake":** keeps the *screen* on while the app is open during a session.
+- **Withering when the app is closed:** ignored on Android (process death is controlled by the OS).
+- **Planting reminders:** delivered natively as notifications (the page-based Notification API does not exist in WebView), so they also work with the app closed. Suppressed while a session is running.
+- **Session notification buttons (Pause/Resume/Stop):** open the app and run the normal in-app action, so the existing rules (3 pauses/24 h, stop confirmation, free 10-second cancel) are applied by the same code. Same for the widget buttons.
+- **Session completion:** the notification alerts at the target time. The session is *recorded* the next time the app is opened (same JS code, same timestamps), exactly as with `countOver`; extra time keeps counting if "count over" is on.
+- **Backup/sync:** Export/Import use the system file picker; the "sync folder" uses a folder you pick through Android's Storage Access Framework (works with Drive/OneDrive folders if their apps expose them). No built-in cloud sync was added.
+- **Sounds:** unchanged – synthesised (Web Audio) chimes and Mindful Space tones; there are no MP3 files. Audio focus is requested only while sound is playing and released 8 s later.
+- **Back button:** closes overlays, then returns Home; during a running session it leaves the app (the session keeps running).

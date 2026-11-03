@@ -1,0 +1,86 @@
+plugins {
+    id 'com.android.application'
+    id 'org.jetbrains.kotlin.android'
+}
+
+// ---- version: keep in step with APP_VERSION in Forestland/web/app.js (Windows) ----
+def verName = '1.9.2'
+def verCode = 10902            // major*10000 + minor*100 + patch  -> must increase with every release
+
+// ---- signing: keystore.properties (git-ignored) or environment variables. Never hardcode secrets. ----
+def ks = new Properties()
+def ksFile = rootProject.file('keystore.properties')
+if (ksFile.exists()) ksFile.withInputStream { ks.load(it) }
+def sec = { String k -> ks.getProperty(k) ?: System.getenv('FORESTLAND_' + k.toUpperCase()) }
+
+android {
+    namespace 'com.forestland.focus'
+    compileSdk 35
+
+    defaultConfig {
+        applicationId 'com.forestland.focus'   // change to your own reverse-domain id BEFORE first Play upload
+        minSdk 26                               // Android 8.0 (notification channels, adaptive icons, pinned widgets)
+        targetSdk 35                            // raise to the current Play requirement when it changes
+        versionCode verCode
+        versionName verName
+    }
+
+    signingConfigs {
+        release {
+            if (sec('storeFile')) {
+                storeFile file(sec('storeFile'))
+                storePassword sec('storePassword')
+                keyAlias sec('keyAlias')
+                keyPassword sec('keyPassword')
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            if (sec('storeFile')) signingConfig signingConfigs.release   // unsigned release if no key is configured
+        }
+        debug { applicationIdSuffix '.debug'; versionNameSuffix '-debug' }
+    }
+
+    compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
+    kotlinOptions { jvmTarget = '17' }
+
+    sourceSets.main {
+        kotlin.srcDirs += 'src/main/kotlin'
+        assets.srcDirs += layout.buildDirectory.dir('generated/webassets')
+    }
+    lint { abortOnError false }
+}
+
+// ---- Web UI: copied from the UNTOUCHED desktop sources at build time, with 3 tiny text patches ----
+// The Windows files in ../Forestland/web are never modified. Patches are applied to the copy only.
+tasks.register('syncWebAssets', Copy) {
+    from(rootProject.file('../Forestland/web')) {
+        exclude 'widget.html'                      // Windows desktop-widget window: replaced by a native App Widget
+        filesMatching('app.js') {
+            filter { String l ->
+                l.replace('if (S.settings.witherClosed) {', 'if (S.settings.witherClosed && !window.FL_ANDROID) {')
+                 .replace("else if (c === 'stop' && cur) stopNow();",
+                          "else if (c === 'stop' && cur) stopNow(); else if (c === 'pause' && cur) pauseSession();")
+            }
+        }
+        filesMatching('index.html') {
+            filter { String l -> l.replace('Python, pywebview (Microsoft Edge WebView2) and psutil on the desktop', 'Kotlin and the Android WebView on Android') }
+        }
+    }
+    into layout.buildDirectory.dir('generated/webassets/web')
+}
+tasks.configureEach { if (name == 'preBuild') dependsOn 'syncWebAssets' }
+
+dependencies {
+    implementation 'androidx.core:core-ktx:1.15.0'
+    implementation 'androidx.activity:activity-ktx:1.9.3'
+    implementation 'androidx.webkit:webkit:1.12.1'
+    implementation 'androidx.documentfile:documentfile:1.0.1'
+    testImplementation 'junit:junit:4.13.2'
+    testImplementation 'org.json:json:20240303'
+}

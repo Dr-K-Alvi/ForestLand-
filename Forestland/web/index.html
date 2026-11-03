@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Forestland</title>
+<link rel="stylesheet" href="style.css">
+<script src="fit.js"></script>
+</head><body>
+<div id="app">
+
+<section id="loading" class="screen on"><div class="lock" role="img" aria-label="Forestland"><img class="mk lt" src="logo.png" alt=""><img class="mk dt" src="logo-dark.png" alt=""><img class="wm lt" src="wordmark.svg" alt=""><img class="wm dt" src="wordmark-light.svg" alt=""></div></section>
+
+<section id="home" class="screen">
+  <header class="bar">
+    <button class="ic" id="btnMenu" aria-label="Menu"><svg viewBox="0 0 24 24"><path d="M3 8h18M3 16h12" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></button>
+    <div class="pills"><span class="pill cn" id="pillCoin"></span><span class="pill gm" id="pillGem"></span></div>
+    <button class="avatar" id="btnAvatar" aria-label="Settings"></button>
+  </header>
+  <div class="homerow"><button class="topsw homesw" role="switch" aria-checked="false" aria-label="Keep Forestland always on top"><span>Always on top</span><i></i><b>OFF</b></button><button id="btnSync" class="syncbtn">⟳ Sync</button></div>
+  <div class="home-wrap">
+    <div class="home-l">
+      <p id="focusLine" class="focusline"></p>
+      <input id="title" type="hidden">
+      <div class="stage" id="stage"><div id="bubble" class="bubble" role="button" tabindex="0" aria-label="Your plant. Drag around it or scroll to set the time, click to change plant"></div></div>
+    </div>
+    <div class="home-r">
+      <div id="timeBig" class="big">00:00</div>
+      <p class="hint" id="modeHint"></p>
+      <button class="cta" id="btnStart">Start Focus</button>
+    </div>
+  </div>
+</section>
+
+<section id="session" class="screen meadow">
+  <button class="ic mute" id="btnMute" aria-label="Mute"></button>
+  <div class="sidebtns"><button id="sWidget" class="widgetbtn" title="Open the desktop widget">▭ Widget</button><button class="topsw" role="switch" aria-checked="false" aria-label="Keep Forestland always on top"><span>Always on top</span><i></i><b>OFF</b></button></div>
+  <input id="sTitle" type="hidden">
+  <div class="patch"></div><div id="sTree" class="stree"></div>
+  <div id="sTimer" class="big">00:00</div>
+  <button id="sPause" class="pausebtn">Pause</button>
+  <button id="sCtl" class="ctl">Cancel (10)</button>
+</section>
+
+<section id="withered" class="screen meadow dry">
+  <div class="stree" id="wTree"></div>
+  <div class="msg"><p id="wMsg">It’s okay. Try again next time.</p><p id="wTime" class="clk"></p></div>
+  <button class="cta wide" id="wGo">Continue</button>
+</section>
+
+<section id="results" class="screen dark">
+  <div class="pills tr"><span class="pill cn" id="rCoin"></span></div>
+  <div id="rLand" class="rland"></div>
+  <p id="rMsg" class="rmsg"></p>
+  <div class="gain" id="rGain"></div>
+  <button class="cta wide" id="rGo">Continue</button>
+</section>
+
+<section id="store" class="screen light">
+  <header class="bar dk"><button class="ic" data-close>✕</button><div class="pills"><span class="pill cn" id="stCoin"></span><span class="pill gm" id="stGem"></span></div></header>
+  <div class="tabs"><button data-tab="plants" class="on">Plants</button><button data-tab="lands">Land Style</button><button id="btnSort" class="ic sm" aria-label="Sort">↑↓</button></div>
+  <div id="storeGrid" class="grid"></div>
+</section>
+
+<section id="settings" class="screen light page">
+  <header class="bar dk"><button class="ic" data-close>✕</button><h2>Settings</h2></header>
+  <div class="list" id="setBody"></div>
+</section>
+<section id="mindful" class="screen mind"></section>
+
+
+<section id="importp" class="screen light page">
+  <header class="bar dk"><button class="ic" data-close>✕</button><h2>Import my progress</h2></header>
+  <div class="list">
+    <label class="fld">Coins<input id="impCoin" type="number" min="0" inputmode="numeric"></label>
+    <label class="fld">Gems<input id="impGem" type="number" min="0" inputmode="numeric"></label>
+    <h3>Trees you already own</h3><div id="impTrees" class="checks"></div>
+    <button class="cta wide dk" id="impSave">Save progress</button>
+  </div>
+</section>
+
+<section id="about" class="screen light page">
+  <header class="bar dk"><button class="ic" data-close>✕</button><h2>About</h2></header>
+  <div class="list about">
+    <div class="abhead">
+      <div class="lock sm" role="img" aria-label="Forestland"><img class="mk lt" src="logo.png" alt=""><img class="mk dt" src="logo-dark.png" alt=""><img class="wm lt" src="wordmark.svg" alt=""><img class="wm dt" src="wordmark-light.svg" alt=""></div>
+      <h1 class="sr">Forestland</h1>
+      <p class="abver"><b>Version <span id="abVer">1.9</span></b><span id="abBuild"></span></p>
+      <p class="abtag">A calm focus timer that grows a forest from your time.</p>
+    </div>
+    <div class="abgrid">
+      <div class="scard abc"><h3>What it is</h3><p>Forestland is a personal, offline focus timer for Windows. Start a session and a tree grows while you stay focused; finish it and the tree joins your forest, give up and it withers. Over time your forest becomes a picture of the hours you have put in.</p></div>
+      <div class="scard abc"><h3>What’s inside</h3><ul>
+        <li><b>Focus timer</b> – stopwatch or countdown, a 10-second free cancel, pauses and a desktop widget.</li>
+        <li><b>Forest</b> – <span id="abTrees">dozens of</span> trees that grow through four levels, <span id="abLands">several</span> land styles and a coin store.</li>
+        <li><b>Records</b> – Forest overview with day, week, month, year and custom charts, planting record and timeline.</li>
+        <li><b>Motivation</b> – daily check-ins, daily challenges and achievements.</li>
+        <li><b>Mindful Space</b> – eight guided breathing techniques with gentle sound.</li>
+        <li><b>Protection</b> – optional app and website blocking while you focus.</li>
+        <li><b>Your way</b> – light, dark or automatic theme, custom phrases and reminders.</li>
+      </ul></div>
+      <div class="scard abc"><h3>Your data and privacy</h3><p>Everything is stored on this PC in <code>%APPDATA%\Forestland</code>. Forestland never connects to the internet by itself. Sync happens only when you press Sync and only through a folder you choose, and you can export or import a backup at any time.</p></div>
+      <div class="scard abc"><h3>What’s new in <span class="abv2">1.9</span></h3><ul>
+        <li>The whole app, the widget included, now resizes smoothly with its window and has a full-screen layout for every section.</li>
+        <li>The desktop widget has no title bar, and three looks: Normal, Solid and Transparent with an opacity slider.</li>
+        <li>Planting and stopping a session now ask you to confirm.</li>
+        <li>Fixed a cancelled session that could come back as a running timer, and made today’s focus time match across Home and the Forest overview.</li>
+      </ul></div>
+      <div class="scard abc"><h3>Built with</h3><p>Python, pywebview (Microsoft Edge WebView2) and psutil on the desktop, with a plain HTML, CSS and JavaScript interface. All trees, lands and the Mindful Space pod were drawn by hand as vector art for Forestland.</p></div>
+      <div class="scard abc"><h3>Credits</h3><p>Designed and owned by Dr. K. Alvi, vibe coded with the help of Claude (Anthropic).</p></div>
+    </div>
+    <p class="note abfoot">Inspired by the Forest focus-timer concept. Forestland is an independent project, not affiliated with or endorsed by Seekrtech.</p>
+  </div>
+</section>
+
+
+<section id="overview" class="screen ovw">
+  <header class="bar dk"><button class="ic" data-close>✕</button><h2>Overview</h2><button class="ic" id="ovShare" aria-label="Share">⤴</button></header>
+  <div class="ovscroll">
+    <div class="ov-l">
+    <div class="otabs" id="ovTabs"><button data-p="day">Day</button><button data-p="week" class="on">Week</button><button data-p="month">Month</button><button data-p="year">Year</button><button data-p="custom">Custom</button></div>
+    <div class="odate"><button class="ic" id="ovPrev" aria-label="Previous">‹</button><span id="ovLabel"></span><button class="ic" id="ovNext" aria-label="Next">›</button></div>
+    <div id="ovCustom" class="ocustom"><input type="date" id="cFrom"><span>to</span><input type="date" id="cTo"></div>
+    <div class="lmode" id="landMode" role="group" aria-label="Land type"><button data-m="garden">Garden</button><button data-m="forest">Forest</button></div>
+    <div class="landwrap"><div id="ovLand" class="oland" role="button" tabindex="0" aria-label="Open planting record"></div><div class="zoomb" role="group" aria-label="Zoom the land"><button id="zIn" aria-label="Zoom in">+</button><button id="zFit" aria-label="Fit the whole land">⤢</button><button id="zOut" aria-label="Zoom out">−</button></div></div>
+    <div class="ocount"><span id="ovOk"></span><span id="ovBad"></span></div>
+    </div>
+    <div class="ov-r">
+    <div class="dcard"><h3>Focused Time Distribution</h3><p id="ovTotal"></p><div id="ovChart" class="chart"></div></div><div id="ovMore"></div>
+    </div>
+  </div>
+</section>
+<section id="timeline" class="screen dark page">
+  <header class="bar dk"><button class="ic" data-close>✕</button><h2>Timeline</h2></header>
+  <div id="tlList" class="tl"></div>
+</section>
+<section id="challenge" class="screen light page">
+  <header class="bar dk"><button class="ic" data-close>✕</button><h2>Focus Challenge</h2><span class="pills"><span class="pill cn" id="chCoin"></span><span class="pill gm" id="chGem"></span></span></header>
+  <div class="list" id="chBody"></div>
+</section>
+<section id="achievements" class="screen dark page">
+  <header class="bar dk"><button class="ic" data-close>✕</button><h2>Achievements</h2></header>
+  <div id="achList" class="ach"></div>
+</section>
+<div id="record" class="ov sheetov"><div class="sheet tall"><div class="grab"></div><div class="shead"><h2>Planting Record</h2></div><p class="note rn">Start–end times include any pauses. The minutes shown are your true focus time.</p><div id="recList" class="rec"></div></div></div>
+<div id="sheet" class="ov sheetov"><div class="sheet"><div class="grab"></div><div class="shead"><h2>My Plants</h2><button class="ic sm" id="btnPSort" aria-label="Sort">↑↓</button></div><div id="plantGrid" class="grid"></div></div></div>
+<div id="menu" class="ov menuov"><nav class="menu"><div class="logo" role="img" aria-label="Forestland"><img src="logo-dark.png" width="72" height="72" alt=""><img class="wm" src="wordmark-light.svg" width="150" alt=""></div>
+  <button data-go="overview">Forest</button><button data-go="challenge">Focus Challenge</button><button data-go="mindful">Mindful Space</button><button data-go="timeline">Timeline</button><button data-go="achievements">Achievements</button><button data-go="store">Store</button><button data-go="widget">Desktop Widget</button><button data-go="settings">Settings</button><button data-go="about">About</button></nav></div>
+<div id="popup" class="ov center"><div class="card"><button class="ic x" id="popX">✕</button><div id="popBody"></div></div></div>
+<div id="dialog" class="ov center"><div class="card dlg"><h3 id="dTitle"></h3><p id="dText"></p><div class="dbtn"><button id="dNo">No</button><button id="dYes" class="red">Give Up</button></div></div></div>
+<div id="toast"></div>
+</div>
+<script src="birch.js"></script>
+<script src="flora.js"></script>
+<script src="realtree.js"></script>
+<script src="trees.js"></script>
+<script src="catalog.js"></script>
+<script src="species1.js"></script>
+<script src="species2.js"></script>
+<script src="lands2.js"></script>
+<script src="lands.js"></script>
+<script src="app.js"></script>
+<script src="records.js"></script>
+<script src="settings.js"></script>
+<script src="mindful.js"></script>
+</body></html>

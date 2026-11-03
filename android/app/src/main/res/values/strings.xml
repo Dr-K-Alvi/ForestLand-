@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Forestland</string>
+    <string name="widget_label">Forestland</string>
+    <string name="widget_desc">Your growing tree, focus time and quick controls.</string>
+</resources>

@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Forestland Widget</title>
+<style>
+html,body{height:100%;margin:0;overflow:hidden}
+body{font-family:"Segoe UI",system-ui,sans-serif;color:#fff;user-select:none;-webkit-user-select:none;background:transparent}
+body[data-mode=normal]{background:linear-gradient(#58b894,#14907a)}
+body[data-mode=solid]{background:#010101}                       /* the existing "solid" look: near-black, text gets a soft shadow */
+body[data-mode=solid] #w,body[data-mode=clear] #w{text-shadow:0 1px 3px #000,0 0 6px #000a}
+body[data-mode=clear] #w{text-shadow:0 1px 2px #000,0 0 5px #000,0 0 9px #000c}
+/* #w is the layout box: widget.html scales it so everything grows and shrinks with the window (see fit()) */
+#w{position:absolute;left:0;top:0;transform-origin:0 0;display:flex;flex-direction:column;align-items:center;padding:8px 9px 9px;box-sizing:border-box;gap:4px}
+.top{width:100%;display:flex;justify-content:space-between;align-items:flex-start;gap:6px;min-height:0}
+#today{font-weight:600;font-size:13px;padding-top:2px}
+.tr{display:flex;flex-direction:column;align-items:flex-end;gap:6px;margin-left:auto}
+#modes{display:flex;gap:6px;align-items:center;background:#0000008a;border-radius:13px;padding:4px 7px}
+body[data-mode=clear] #modes{background:#101614}
+#modes button{width:17px;height:17px;border-radius:50%;border:0;padding:0;cursor:pointer;position:relative;box-shadow:0 0 0 1.5px #ffffff55}
+#modes button[data-m=normal]{background:linear-gradient(#58b894,#14907a)}
+#modes button[data-m=solid]{background:#000;box-shadow:0 0 0 1.5px #ffffffaa}
+#modes button[data-m=clear]{background:repeating-conic-gradient(#aab 0 25%,#fff 0 50%) 0 0/8px 8px;box-shadow:0 0 0 1.5px #ffffffaa}
+#modes button.on{box-shadow:0 0 0 2px #fff,0 0 0 3.5px #0006}
+/* always-on-top: a small, quiet ON/OFF switch */
+#atop{display:inline-flex;align-items:center;gap:4px;background:#0000008a;color:#fff;border:0;border-radius:10px;padding:3px 6px 3px 6px;font-size:9.5px;font-weight:700;cursor:pointer;text-shadow:none;opacity:.8;font-family:inherit}
+#atop:hover{opacity:1}
+#atop i{position:relative;width:22px;height:12px;border-radius:6px;background:#ffffff40;flex:none;transition:background .15s}
+#atop i::after{content:"";position:absolute;top:2px;left:2px;width:8px;height:8px;border-radius:50%;background:#fff;transition:transform .15s}
+#atop.on i{background:#34c759}#atop.on i::after{transform:translateX(10px)}
+#atop b{min-width:17px;text-align:left;font-weight:700;letter-spacing:.02em}
+#tree{flex:1;min-height:0;width:100%;display:grid;place-items:center}
+#tree svg{max-height:100%;max-width:78%;width:auto;height:100%;filter:drop-shadow(0 2px 4px #0006)}
+#time{font-size:40px;line-height:1.1;letter-spacing:.06em;font-variant-numeric:tabular-nums}
+#go{margin:5px 0 2px;width:80%;padding:8px 0;border:0;border-radius:24px;background:#fff;color:#0f5a52;font-size:16px;font-weight:600;cursor:pointer;text-shadow:none;font-family:inherit}
+#go:active{transform:scale(.98)}
+.row{display:flex;gap:6px;width:100%;justify-content:center}
+#open{background:#0000008a;border:0;color:#fff;border-radius:12px;padding:5px 10px;cursor:pointer;font-size:12px;text-shadow:none;font-family:inherit}
+/* ask again before planting or stopping (the main window is parked while the widget is open, so the question is asked here) */
+#cf{display:none;flex-direction:column;align-items:center;gap:5px;width:92%;margin:3px 0 2px}
+body.confirming #cf{display:flex}body.confirming #go{display:none}
+#cfT{font-size:12.5px;font-weight:600;text-align:center;line-height:1.25}
+#cf div{display:flex;gap:8px;width:100%;justify-content:center}
+#cf button{flex:1;max-width:100px;padding:6px 0;border:0;border-radius:16px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;text-shadow:none}
+#cfNo{background:#0000008a;color:#fff}#cfYes{background:#fff;color:#0f5a52}#cfYes.red{background:#f26662;color:#fff}
+body[data-mode=clear] #cfNo{background:#101614}
+/* transparent mode: only the tree, the timer, Start/Stop, a way back and a way to the forest */
+#forestI{display:none;background:#101614;border:0;border-radius:13px;width:27px;height:25px;padding:0;cursor:pointer;place-items:center}
+#forestI svg{width:16px;height:16px}
+#alpha{display:none;align-items:center;gap:6px;width:80%;margin-top:3px;opacity:.5;transition:opacity .2s;text-shadow:none}
+#alpha:hover,#alpha:focus-within{opacity:1}
+#alpha span{font-size:13px;line-height:1;text-shadow:0 1px 2px #000}
+#alpha input{flex:1;min-width:0;height:14px;margin:0;accent-color:#fff;cursor:pointer}
+body[data-mode=clear] #today,body[data-mode=clear] #atop,body[data-mode=clear] #open{display:none}
+body[data-mode=clear] #forestI{display:grid}
+body[data-mode=clear] #alpha{display:flex}
+#grip{position:absolute;right:2px;bottom:2px;width:14px;height:14px;cursor:nwse-resize;opacity:.4;background:linear-gradient(135deg,transparent 0 46%,#fff 46% 54%,transparent 54% 68%,#fff 68% 76%,transparent 76%);border-radius:0 0 8px 0}
+#grip:hover{opacity:.9}
+button:focus-visible,input:focus-visible{outline:2px solid #fff;outline-offset:1px}
+</style></head><body data-mode="normal">
+<div id="w">
+  <div class="top">
+    <span id="today">Today 0m</span>
+    <div class="tr">
+      <div id="modes" role="group" aria-label="Widget look"><button data-m="normal" title="Normal" aria-label="Normal"></button><button data-m="solid" title="Solid" aria-label="Solid"></button><button data-m="clear" title="Transparent" aria-label="Transparent"></button></div>
+      <button id="atop" class="on" role="switch" aria-checked="true" aria-label="Always on top" title="Always on top"><i></i><b>ON</b></button>
+      <button id="forestI" title="Open Forestland" aria-label="Open Forestland"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l5 7h-3l4 6H6l4-6H7z"/><path d="M12 16v5"/></svg></button>
+    </div>
+  </div>
+  <div id="tree"></div><div id="time">00:00</div>
+  <button id="go">Plant</button>
+  <div id="cf"><span id="cfT"></span><div><button id="cfNo">No</button><button id="cfYes">Yes</button></div></div>
+  <div class="row"><button id="open">Open Forestland</button></div>
+  <label id="alpha" title="Opacity"><span aria-hidden="true">◐</span><input id="aR" type="range" min="25" max="100" step="1" value="100" aria-label="Opacity"></label>
+  <span id="grip" role="presentation" title="Resize"></span>
+</div>
+<script src="birch.js"></script><script src="flora.js"></script><script src="realtree.js"></script><script src="trees.js"></script><script src="catalog.js"></script><script src="species1.js"></script><script src="species2.js"></script>
+<script>
+const api = () => window.pywebview && window.pywebview.api, $ = (s) => document.querySelector(s), $$ = (s) => [...document.querySelectorAll(s)];
+let key = '', pinned = true, mode = 'normal', alpha = 100, st = { kind: 'idle' }, cfTimer = 0, cfAct = '';
+
+/* ----- scale with the window: the layout box is at least 230 x 300 and is scaled to fill the window ----- */
+function fit() {
+  const W = innerWidth || 250, H = innerHeight || 330, z = Math.max(.5, Math.min(4, Math.min(W / 230, H / 300))), w = $('#w');
+  w.style.width = (W / z).toFixed(1) + 'px'; w.style.height = (H / z).toFixed(1) + 'px'; w.style.transform = `scale(${z.toFixed(4)})`; window.__z = z;
+}
+addEventListener('resize', fit); fit();
+
+function setTop(v) { pinned = !!v; const b = $('#atop'); b.classList.toggle('on', pinned); b.setAttribute('aria-checked', pinned); b.querySelector('b').textContent = pinned ? 'ON' : 'OFF'; }
+function setMode(m, save) {
+  mode = m; document.body.dataset.mode = m; $$('#modes button').forEach(b => { const on = b.dataset.m === m; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); });
+  closeConfirm(); if (save && api()) api().widget_mode(m, alpha);
+}
+async function init() {
+  try { const p = await api().get_prefs(); setTop(p.widgetTop); alpha = Math.max(25, Math.min(100, +p.widgetAlpha || 100)); $('#aR').value = alpha; setMode(['normal', 'solid', 'clear'].includes(p.widgetMode) ? p.widgetMode : 'normal', true); }
+  catch (e) { setTop(true); setMode('normal'); }
+  poll();
+}
+/* ----- state from the main window ----- */
+async function poll() {
+  if (!api()) return;
+  try {
+    const u = await api().widget_state(); if (!u || u.tree === undefined) return;
+    const was = st.kind; st = u;
+    $('#today').textContent = 'Today ' + u.today; $('#time').textContent = u.time; $('#go').textContent = u.running ? (u.kind === 'cancel' ? 'Cancel' : 'Stop') : 'Plant';
+    if (cfAct && ((cfAct === 'plant' && u.running) || (cfAct === 'stop' && !u.running))) closeConfirm();   // the session changed while the question was open
+    const k = [u.tree, u.lvl, u.scale, u.sprout].join(); if (k !== key) { key = k; $('#tree').innerHTML = u.sprout ? sproutSVG() : treeSVG(u.tree, u.lvl, { scale: u.scale }); }
+  } catch (e) { }
+}
+/* ----- Plant / Stop with a confirmation ----- */
+function closeConfirm() { clearTimeout(cfTimer); cfAct = ''; document.body.classList.remove('confirming'); }
+function ask(act, text, yes, red) {
+  cfAct = act; $('#cfT').textContent = text; const y = $('#cfYes'); y.textContent = yes; y.classList.toggle('red', !!red); document.body.classList.add('confirming');
+  clearTimeout(cfTimer); cfTimer = setTimeout(closeConfirm, 9000);
+}
+$('#go').onclick = () => {
+  if (!api()) return;
+  if (!st.running) return ask('plant', 'Plant now?', 'Plant');
+  if (st.kind === 'cancel') return api().cmd('stop');                     // the free cancel window needs no question
+  if (st.kind === 'ok') return ask('stop', `Stop now and plant ${st.trees} tree${st.trees > 1 ? 's' : ''}?`, 'Stop');
+  ask('stop', 'Give up? The tree will wither.', 'Give up', true);
+};
+$('#cfNo').onclick = closeConfirm;
+$('#cfYes').onclick = () => { const a = cfAct; closeConfirm(); if (api() && a) api().cmd(a); setTimeout(poll, 300); };
+/* ----- top-right controls ----- */
+$('#atop').onclick = async () => { const v = !pinned; setTop(v); try { await api().set_top('widget', v); } catch (e) { } };
+$$('#modes button').forEach(b => b.onclick = () => setMode(b.dataset.m, true));
+$('#open').onclick = () => api() && api().open_main('home');
+$('#forestI').onclick = () => api() && api().open_main('forest');
+/* opacity (Transparent look only): follows the slider live, saved when it is released */
+let aBusy = 0, aNext = null;
+function pushAlpha() { if (!api() || aBusy || aNext == null) return; const v = aNext; aNext = null; aBusy = 1; Promise.resolve(api().widget_alpha(v)).catch(() => { }).then(() => { aBusy = 0; pushAlpha(); }); }
+$('#aR').oninput = (e) => { alpha = +e.target.value; aNext = alpha; pushAlpha(); };
+$('#aR').onchange = () => { if (api()) api().widget_mode(mode, alpha); };
+/* ----- move the widget by dragging the background; resize from the corner grip or the window edges ----- */
+document.body.addEventListener('pointerdown', (e) => { if (e.button !== 0 || !api() || e.target.closest('button,input,label,#grip')) return; api().drag_widget(); });
+$('#grip').addEventListener('pointerdown', (e) => { if (e.button !== 0 || !api()) return; e.stopPropagation(); api().resize_widget(); });
+document.addEventListener('contextmenu', (e) => e.preventDefault());
+setInterval(poll, 700); window.addEventListener('pywebviewready', init);
+</script></body></html>
